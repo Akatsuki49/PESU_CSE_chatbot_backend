@@ -7,9 +7,9 @@ import pandas as pd
 from groq import Groq
 
 def answer_gen(question):
-    ASTRA_DB_APPLICATION_TOKEN = "AstraCS:dBtjWDuPxLQlvsovQWBPZJud:4c33db338e67bb3c177c3eb5cea9154bc3d6782ce008090fc94d20b0221f7d54"
-    ASTRA_DB_API_ENDPOINT = "https://4efc19d7-a22a-4553-bffa-86afd548f4ac-us-east1.apps.astra.datastax.com"  # Replace with your actual endpoint
-    ASTRA_DB_KEYSPACE = "sahai_namespace"  # Replace with your actual keyspace
+    ASTRA_DB_APPLICATION_TOKEN = "AstraCS:ZvYLxZLcceZTrcXeEMOxCyDe:dae3b56e90e49af338a11d0ebcf402f7b593e9deaf2d7a6fbcbe429e4de511d7"
+    ASTRA_DB_API_ENDPOINT = "https://67749076-dffb-4c03-905c-15bb314b46c7-us-east-2.apps.astra.datastax.com"  # Replace with your actual endpoint
+    ASTRA_DB_KEYSPACE = "sahai_namespace" # Replace with your actual keyspace
     # excel_file_path = 'QAs.xlsx'
     embeddings_model_name = "sentence-transformers/all-MiniLM-L6-v2"
     embeddings = HuggingFaceEmbeddings(model_name=embeddings_model_name)
@@ -18,7 +18,7 @@ def answer_gen(question):
     vstore = AstraDBVectorStore(
         embedding=embeddings,
         namespace=ASTRA_DB_KEYSPACE,
-        collection_name="sahaitest",
+        collection_name="qna",
         token=ASTRA_DB_APPLICATION_TOKEN,
         api_endpoint=ASTRA_DB_API_ENDPOINT,
     )
@@ -29,7 +29,7 @@ def answer_gen(question):
         resul.append(res.page_content)
     
     client = Groq(
-        api_key="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",
+        api_key="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",
     )
 
     chat_completion = client.chat.completions.create(
