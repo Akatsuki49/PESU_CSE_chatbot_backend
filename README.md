@@ -1,6 +1,7 @@
 TODO: SAHAI:
 
 Backend Work:
-* Astra DB doesn't seem to be working find a workaround or fix it(immediate prio)
 * Find a better strategy to chunk and store the data
+* Deployment Strategies: Lambda or EC2
+* REST API comms with cloud based vectordb
 I think it can be better
