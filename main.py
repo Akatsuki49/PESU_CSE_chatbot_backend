@@ -16,7 +16,7 @@ async def query_pipeline(query: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 # Endpoint to upload and store data
-@app.post("/upload/")
+@app.post("/upload_file/")
 async def upload_data(file: UploadFile):
     if file.filename.endswith(".xlsx"):
         try:
@@ -34,6 +34,10 @@ async def upload_data(file: UploadFile):
             raise HTTPException(status_code=500, detail=str(e))
     else:
         raise HTTPException(status_code=400, detail="Invalid file type. Only .xlsx files are supported.")
+    
+# @app.post("/upload_question/")
+# async def upload_question(question: str):
+#     try:
 
 # Endpoint to retrieve stored data
 # @app.get("/data/")
@@ -43,3 +47,5 @@ async def upload_data(file: UploadFile):
 #         return {"data": data}
 #     except Exception as e:
 #         raise HTTPException(status_code=500, detail=str(e))
+
+# uvicorn main:app --host 0.0.0.0 --port 8000

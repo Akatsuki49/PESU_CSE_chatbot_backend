@@ -1,5 +1,5 @@
 # Use the official Python base image for Python 3.12.1
-FROM python:3.12.1-slim
+FROM python:3.12.1
 
 # Set the working directory inside the container
 WORKDIR /app
@@ -15,4 +15,5 @@ COPY . .
 EXPOSE 8000
 
 # Run the FastAPI app
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+# CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["fastapi", "run", "main.py", "--host", "0.0.0.0", "--port", "8000"]
