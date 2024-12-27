@@ -1,5 +1,5 @@
-from astrapy import DataAPIClient
-from langchain_astradb import AstraDBVectorStore
+# from astrapy import DataAPIClient
+# from langchain_astradb import AstraDBVectorStore
 from langchain_community.embeddings import HuggingFaceEmbeddings
 import csv
 import warnings
@@ -9,17 +9,18 @@ from qdrant_client import QdrantClient
 from qdrant_client.models import PointStruct, VectorParams, Distance
 warnings.filterwarnings("ignore")
 
+embeddings_model_name = "sentence-transformers/all-MiniLM-L6-v2"
+embeddings = HuggingFaceEmbeddings(model_name=embeddings_model_name)
+collection_name = "my_collection"
+
+client = QdrantClient(
+    url="https://d120984a-fd16-42a2-bc4e-38a3ecdd3d19.us-west-2-0.aws.cloud.qdrant.io:6333", 
+    api_key="tNztKZHHIHLRq0U6LT7pBVyAiR0KYV2oe22hHeAS-FEsyElQznBVxA",
+)
+
 def store_xl(excel_file_path):
 
     # excel_file_path = 'QAs.xlsx'
-    embeddings_model_name = "sentence-transformers/all-MiniLM-L6-v2"
-    embeddings = HuggingFaceEmbeddings(model_name=embeddings_model_name)
-    collection_name = "my_collection"
-
-    client = QdrantClient(
-        url="https://d120984a-fd16-42a2-bc4e-38a3ecdd3d19.us-west-2-0.aws.cloud.qdrant.io:6333", 
-        api_key="tNztKZHHIHLRq0U6LT7pBVyAiR0KYV2oe22hHeAS-FEsyElQznBVxA",
-    )
 
 
     if client.collection_exists(collection_name):
@@ -30,7 +31,6 @@ def store_xl(excel_file_path):
             collection_name=collection_name,
             vectors_config=VectorParams(size=384, distance=Distance.COSINE),
         )
-    # print(qdrant_client.get_collections())
 
 
     # ASTRA_DB_APPLICATION_TOKEN = "AstraCS:ZvYLxZLcceZTrcXeEMOxCyDe:dae3b56e90e49af338a11d0ebcf402f7b593e9deaf2d7a6fbcbe429e4de511d7"
@@ -68,22 +68,28 @@ def store_xl(excel_file_path):
             docs.append(Document(page_content=question))
         return qa, docs
 
-    if __name__ == "__main__":
-        questions, answers = read_csv(excel_file_path)
-        qa, docs = segregate(questions, answers)
-        doc_embeddings = embeddings.embed_documents([doc.page_content for doc in docs])
-        client.upsert(
-            collection_name=collection_name,
-            points=[
-                PointStruct(
-                    id=idx,  # Unique ID
-                    vector=embedding,
-                    payload={"question": questions[idx]},
-                )
-                for idx, embedding in enumerate(doc_embeddings)
-            ]
-        )
+    # if __name__ == "__main__":
+    questions, answers = read_csv(excel_file_path)
+    qa, docs = segregate(questions, answers)
+    doc_embeddings = embeddings.embed_documents([doc.page_content for doc in docs])
+    client.upsert(
+        collection_name=collection_name,
+        points=[
+            PointStruct(
+                id=idx,  # Unique ID
+                vector=embedding,
+                payload={"question": questions[idx]},
+            )
+            for idx, embedding in enumerate(doc_embeddings)
+        ]
+    )
+    print("Successfully ingested documents into Qdrant VDB")
 
+if __name__ == "__main__":
+    file_to_store = r"C:\Users\sowme\StudioProjects\PESU_CSE_chatbot_backend\QAs.xlsx"
+    store_xl(file_to_store)
+
+# def store_single_qa(question, answer):
 
     # vstore.add_documents(docs)
     # with open(QA_DICT_PATH, 'wb') as f:

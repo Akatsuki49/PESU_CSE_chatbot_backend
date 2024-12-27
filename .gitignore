@@ -1,2 +1,4 @@
 sahai_env/
 chatbot/
+__pycache__/
+temp_QAs.xlsx
