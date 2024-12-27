@@ -1,7 +1,5 @@
-TODO: SAHAI:
+TO RUN: SAHAI:
 
-Backend Work:
-* Find a better strategy to chunk and store the data
-* Deployment Strategies: Lambda or EC2
-* REST API comms with cloud based vectordb
-I think it can be better
+1. docker build -t sahai .
+2. docker run -p 8000:8000 --name sahai_backend sahai
+3. docker start -a sahai_backend
