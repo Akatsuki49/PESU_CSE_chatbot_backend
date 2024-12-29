@@ -1,26 +1,23 @@
 from fastapi import FastAPI, UploadFile, HTTPException
-# from typing import List
 import shutil
-from rag import answer_gen  # Example function from rag.py
-from store import store_xl  # Example functions from store.py
+from rag import call_llm, retrieve_ans
+from store import store_xl, store_single_qa
 
 app = FastAPI()
 
-# Endpoint to process a query using the RAG pipeline
 @app.post("/query/")
 async def query_pipeline(query: str):
     try:
-        result = answer_gen(query)  # Call function from rag.py
-        return {"query": query, "result": result}
+        relevant_ans = retrieve_ans(query)
+        final_ans = call_llm(query, relevant_ans)
+        return {"query": query, "relevant_doc": relevant_ans, "final_response": final_ans}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-# Endpoint to upload and store data
 @app.post("/upload_file/")
 async def upload_data(file: UploadFile):
     if file.filename.endswith(".xlsx"):
         try:
-            # Save the uploaded file temporarily
             temp_file_path = f"temp_{file.filename}"
             with open(temp_file_path, "wb") as buffer:
                 shutil.copyfileobj(file.file, buffer)
@@ -28,24 +25,18 @@ async def upload_data(file: UploadFile):
             # Call the store_xl function with the file path
             store_xl(temp_file_path)
 
-            # Return success message
             return {"message": f"File {file.filename} uploaded and processed successfully"}
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
     else:
         raise HTTPException(status_code=400, detail="Invalid file type. Only .xlsx files are supported.")
     
-# @app.post("/upload_question/")
-# async def upload_question(question: str):
-#     try:
+@app.post("/upload_single_qa/")
+async def upload_single_qa(question: str, answer: str):
+    try:
+        store_single_qa(question, answer)
+        return {"message": "Question and answer stored successfully."}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
-# Endpoint to retrieve stored data
-# @app.get("/data/")
-# async def get_stored_data():
-#     try:
-#         data = retrieve_data()  # Call function from store.py
-#         return {"data": data}
-#     except Exception as e:
-#         raise HTTPException(status_code=500, detail=str(e))
-
-# uvicorn main:app --host 0.0.0.0 --port 8000
+# fastapi run main.py --host 0.0.0.0 --port 8000
