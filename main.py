@@ -1,9 +1,12 @@
-from fastapi import FastAPI, UploadFile, HTTPException
+from fastapi import FastAPI, UploadFile, HTTPException, WebSocket, WebSocketDisconnect
 import shutil
 from rag import call_llm, retrieve_ans
 from store import store_xl, store_single_qa
+from websocketManager import ConnectionManager
+from getSimilarQuestions import getSimilarQuestions
 
 app = FastAPI()
+manager = ConnectionManager()
 
 @app.post("/query/")
 async def query_pipeline(query: str):
@@ -39,4 +42,36 @@ async def upload_single_qa(question: str, answer: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-# fastapi run main.py --host 0.0.0.0 --port 8000
+@app.websocket("/communicate")
+async def websocket_endpoint(websocket: WebSocket):
+    await manager.connect(websocket)
+    try:
+        while True:
+            data = await websocket.receive_text()
+            await manager.send_personal_message(f"Received:{data}",websocket)
+    except WebSocketDisconnect:
+        manager.disconnect(websocket)
+
+@app.websocket("/upload_single_qa/")
+async def websocket_endpoint(websocket: WebSocket):
+    await manager.connect(websocket)
+    try:
+        while True:
+            data = await websocket.recieve_json()
+            if "question" in data and "answer" in data:
+                question = data["question"]
+                answer = data["answer"]
+                similar_data = getSimilarQuestions(question)
+                await manager.send_personal_message(f"Similar data: {similar_data}",websocket)
+            if "confirm" in data:
+                store_single_qa(question, answer)
+                await manager.send_personal_message(f"Data stored successfully",websocket)
+            else:
+                manager.disconnect(websocket)
+
+
+    except WebSocketDisconnect:
+        manager.disconnect(websocket)
+
+# fastapi run main.py --host 0.0.0.0 --port 8000 : not used now
+# fastapi dev main.py --reload
