@@ -5,27 +5,25 @@ from qdrant_client import QdrantClient
 from langchain_groq import ChatGroq
 import dotenv
 import os
+from config import *
 warnings.filterwarnings("ignore")
 
 dotenv.load_dotenv()
 os.environ["GROQ_API_KEY"] = os.getenv("GROQ_API_KEY")
 os.environ["QDRANT_API_KEY"] = os.getenv("QDRANT_API_KEY")
 
-qdrant_client_url = "https://d120984a-fd16-42a2-bc4e-38a3ecdd3d19.us-west-2-0.aws.cloud.qdrant.io:6333"
-
 quadrant_client = QdrantClient(
-    url= qdrant_client_url, 
+    url= QDRANT_CLIENT, 
     api_key= os.getenv("QDRANT_API_KEY"),
     )
 
-excel_file_path = 'QAs.xlsx'
-embeddings_model_name = "sentence-transformers/all-MiniLM-L6-v2"
-embeddings = HuggingFaceEmbeddings(model_name=embeddings_model_name)
-collection_name = "pesu_cse_qa_collection"
+excel_file_path = 'QAs.xlsx' 
+embeddings = HuggingFaceEmbeddings(model_name=EMBEDDING_MODEL)
+collection_name = COLLECTION_NAME
 
 groq_client = ChatGroq(
-        model="llama3-70b-8192",
-        temperature=0.1,
+        model=LLM_MODEL,
+        temperature=MODEL_TEMPERATURE,
     )
 
 def retrieve_ans(question):

@@ -34,13 +34,13 @@ async def upload_data(file: UploadFile):
     else:
         raise HTTPException(status_code=400, detail="Invalid file type. Only .xlsx files are supported.")
     
-@app.post("/upload_single_qa/")
-async def upload_single_qa(question: str, answer: str):
-    try:
-        store_single_qa(question, answer)
-        return {"message": "Question and answer stored successfully."}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+# @app.post("/upload_single_qa/")
+# async def upload_single_qa(question: str, answer: str):
+#     try:
+#         store_single_qa(question, answer)
+#         return {"message": "Question and answer stored successfully."}
+#     except Exception as e:
+#         raise HTTPException(status_code=500, detail=str(e))
 
 @app.websocket("/communicate")
 async def websocket_endpoint(websocket: WebSocket):
@@ -57,16 +57,16 @@ async def websocket_endpoint(websocket: WebSocket):
     await manager.connect(websocket)
     try:
         while True:
-            data = await websocket.recieve_json()
+            data = await websocket.receive_json()
             if "question" in data and "answer" in data:
                 question = data["question"]
                 answer = data["answer"]
                 similar_data = getSimilarQuestions(question)
                 await manager.send_personal_message(f"Similar data: {similar_data}",websocket)
-            if "confirm" in data:
-                store_single_qa(question, answer)
-                await manager.send_personal_message(f"Data stored successfully",websocket)
             else:
+                if "confirm" in data:
+                    store_single_qa(question, answer)
+                    await manager.send_personal_message(f"Data stored successfully",websocket)
                 manager.disconnect(websocket)
 
 
@@ -75,3 +75,7 @@ async def websocket_endpoint(websocket: WebSocket):
 
 # fastapi run main.py --host 0.0.0.0 --port 8000 : not used now
 # fastapi dev main.py --reload
+
+# docker run -p 6333:6333 -p 6334:6334 `
+#     -v "${PWD}/qdrant_storage:/qdrant/storage" `
+#     qdrant/qdrant
