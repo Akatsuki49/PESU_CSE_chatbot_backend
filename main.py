@@ -4,6 +4,7 @@ from rag import call_llm, retrieve_ans
 from store import store_xl, store_single_qa
 from websocketManager import ConnectionManager
 from getSimilarQuestions import getSimilarQuestions
+import json
 
 app = FastAPI()
 manager = ConnectionManager()
@@ -62,7 +63,17 @@ async def websocket_endpoint(websocket: WebSocket):
                 question = data["question"]
                 answer = data["answer"]
                 similar_data = getSimilarQuestions(question)
-                await manager.send_personal_message(f"Similar data: {similar_data}",websocket)
+                similar_qna = []
+                for data in similar_data:
+                    qna = {
+                            "question": data.payload["question"],
+                            "answer": data.payload["answer"]
+                        }
+                    similar_qna.append(qna)
+                
+                qna_json = json.dumps(similar_qna)
+                await manager.send_personal_message(f"Similar questions and answers:",websocket)
+                await manager.send_personal_message(qna_json,websocket)
             else:
                 if "confirm" in data:
                     store_single_qa(question, answer)
@@ -77,5 +88,6 @@ async def websocket_endpoint(websocket: WebSocket):
 # fastapi dev main.py --reload
 
 # docker run -p 6333:6333 -p 6334:6334 `
-#     -v "${PWD}/qdrant_storage:/qdrant/storage" `
-#     qdrant/qdrant
+#      -v "${PWD}/qdrant_storage:/qdrant/storage" `
+#      --name qdrant_VDB `              
+#  qdrant/qdrant

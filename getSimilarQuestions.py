@@ -23,6 +23,4 @@ def getSimilarQuestions(question):
         limit=5,
         with_payload=True)
     
-    print(results)
-    
     return results

@@ -26,8 +26,8 @@ def generate_custom_uuid():
 
 def store_xl(excel_file_path):
 
-    if client.collection_exists(collection_name):
-        client.delete_collection(collection_name)
+    # if client.collection_exists(collection_name):
+    #     client.delete_collection(collection_name)
 
     if not client.collection_exists(collection_name):
         client.create_collection(
@@ -83,6 +83,12 @@ def store_xl(excel_file_path):
 def store_single_qa(question, answer):
     question_doc = Document(page_content=question)
     doc_embedding = embedding_model.embed_documents([question_doc.page_content])
+
+    if not client.collection_exists(collection_name):
+        client.create_collection(
+            collection_name=collection_name,
+            vectors_config=VectorParams(size=384, distance=Distance.COSINE),
+        )
 
     client.upsert(
         collection_name=collection_name,
