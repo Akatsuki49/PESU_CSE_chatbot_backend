@@ -1,14 +1,25 @@
 from fastapi import FastAPI, UploadFile, HTTPException, WebSocket, WebSocketDisconnect
 import shutil
-from rag import call_llm, retrieve_ans
+from openpyxl import load_workbook
+from pydantic import BaseModel
+from io import BytesIO
+from rag import call_llm, retrieve_ans, validate
 from store import store_xl, store_single_qa
 from websocketManager import ConnectionManager
-from getSimilarQuestions import getSimilarQuestions
+from getSimilarQuestions import getSimilarQuestions, runloop
 import json
+from typing import List
 from delete_points import delete_points
 
 app = FastAPI()
 manager = ConnectionManager()
+
+class Question(BaseModel):
+    question: str
+    answer: str
+
+class QuestionsRequest(BaseModel):
+    questions: List[Question]
 
 @app.post("/query/")
 async def query_pipeline(query: str):
@@ -21,20 +32,29 @@ async def query_pipeline(query: str):
 
 @app.post("/upload_file/")
 async def upload_data(file: UploadFile):
-    if file.filename.endswith(".xlsx"):
-        try:
-            temp_file_path = f"temp_{file.filename}"
-            with open(temp_file_path, "wb") as buffer:
-                shutil.copyfileobj(file.file, buffer)
-
-            # Call the store_xl function with the file path
-            store_xl(temp_file_path)
-
-            return {"message": f"File {file.filename} uploaded and processed successfully"}
-        except Exception as e:
-            raise HTTPException(status_code=500, detail=str(e))
-    else:
+    if not file.filename.endswith(".xlsx"):
         raise HTTPException(status_code=400, detail="Invalid file type. Only .xlsx files are supported.")
+
+    try:
+        # Read the uploaded file into memory
+        contents = await file.read()
+        workbook = load_workbook(filename=BytesIO(contents))
+        sheet = workbook.active
+        results = runloop(sheet)
+        return {"message": "File processed successfully", "results": results}
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"An error occurred while processing the file: {str(e)}")
+
+
+@app.post("/add_question")
+async def add_question(request: QuestionsRequest):
+    try:
+        for qa in request.questions:
+            store_single_qa(qa.question, qa.answer)
+        return {"message": "Questions added to Qdrant successfully"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.websocket("/upload_single_qa/")
 async def websocket_endpoint(websocket: WebSocket):

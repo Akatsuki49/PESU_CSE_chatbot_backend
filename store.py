@@ -101,8 +101,8 @@ def store_single_qa(question, answer):
         ]
     )
 
-if __name__ == "__main__":
-    file_to_store = r"C:\Users\sowme\StudioProjects\PESU_CSE_chatbot_backend\QAs.xlsx"
-    store_xl(file_to_store)
+# if __name__ == "__main__":
+#     file_to_store = r"C:\Users\sowme\StudioProjects\PESU_CSE_chatbot_backend\QAs.xlsx"
+#     store_xl(file_to_store)
 
 

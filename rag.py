@@ -53,6 +53,13 @@ def call_llm(question, relevant_ans):
     ]
     return groq_client.invoke(messages).content
 
+def validate(question, similar_question):
+    messages=[
+        ("system", "You are a user friendly responder bot answering on behalf of the PES University RR Campus Bengaluru, BTech CSE department."),
+        ("user", f"Given the main question \n\n {question} and top 5 similar questions: \n\n\n {similar_question}\n\n\n Looking at these similar questions and the main question, is any of the similar question's intent same as the main question? Output only YES or NO"),
+    ]
+    return groq_client.invoke(messages).content
+
 if __name__ == "__main__":
     question = "What are the subjects in elective 4"
     relevant_ans = retrieve_ans(question)
