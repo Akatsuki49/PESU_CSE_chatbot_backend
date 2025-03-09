@@ -6,7 +6,7 @@ from io import BytesIO
 from rag import call_llm, retrieve_ans, validate
 from store import store_xl, store_single_qa
 from websocketManager import ConnectionManager
-from getSimilarQuestions import getSimilarQuestions
+from getSimilarQuestions import getSimilarQuestions, runloop
 import json
 from typing import List
 from delete_points import delete_points
@@ -40,22 +40,7 @@ async def upload_data(file: UploadFile):
         contents = await file.read()
         workbook = load_workbook(filename=BytesIO(contents))
         sheet = workbook.active
-
-        results = []
-        # Iterate over each row in the sheet starting from the second row
-        for row in sheet.iter_rows(min_row=2, values_only=True):
-            question = row[0]  # Assuming the question is in the first column
-            answer = row[1]
-            if question:
-                similar_question = getSimilarQuestions(question)
-                finalans = validate(question,similar_question)
-                if finalans=="NO":
-                    results.append({
-                        "original_question": question,
-                        "original_answer": answer,
-                        "similar_question": similar_question
-                    })
-
+        results = runloop(sheet)
         return {"message": "File processed successfully", "results": results}
 
     except Exception as e:
