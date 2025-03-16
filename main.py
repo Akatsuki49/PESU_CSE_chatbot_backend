@@ -9,7 +9,7 @@ from websocketManager import ConnectionManager
 from getSimilarQuestions import getSimilarQuestions, runloop
 import json
 from typing import List
-from delete_points import delete_points
+from change import delete_points, update_points
 
 app = FastAPI()
 manager = ConnectionManager()
@@ -24,8 +24,8 @@ class QuestionsRequest(BaseModel):
 @app.post("/query/")
 async def query_pipeline(query: str):
     try:
-        relevant_ans = retrieve_ans(query)
-        final_ans = call_llm(query, relevant_ans)
+        relevant_ans, final_ans = retrieve_ans(query)
+        # final_ans = call_llm(query, relevant_ans)
         return {"query": query, "relevant_doc": relevant_ans, "final_response": final_ans}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
