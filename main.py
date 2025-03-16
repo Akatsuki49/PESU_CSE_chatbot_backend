@@ -3,11 +3,13 @@ import shutil
 from openpyxl import load_workbook
 from pydantic import BaseModel
 from io import BytesIO
+import asyncio
 from rag import call_llm, retrieve_ans, validate
 from store import store_xl, store_single_qa
 from websocketManager import ConnectionManager
 from getSimilarQuestions import getSimilarQuestions, runloop
 import json
+import subprocess
 from typing import List
 from change import delete_points, update_points
 
@@ -20,6 +22,8 @@ class Question(BaseModel):
 
 class QuestionsRequest(BaseModel):
     questions: List[Question]
+
+
 
 @app.post("/query/")
 async def query_pipeline(query: str):

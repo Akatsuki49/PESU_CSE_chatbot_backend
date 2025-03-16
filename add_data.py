@@ -2,7 +2,7 @@ import pandas as pd
 from qdrant_client import QdrantClient
 from qdrant_client.models import PointStruct, VectorParams, Distance
 from sentence_transformers import SentenceTransformer
-from config import QDRANT_CLIENT, EMBEDDING_MODEL, COLLECTION_NAME
+from config import QDRANT_CLIENT, EMBEDDING_MODEL, COLLECTION_NAME, FILE_PATH
 from store import store_xl
 
 
@@ -13,7 +13,7 @@ client = QdrantClient(QDRANT_CLIENT)
 model = SentenceTransformer(EMBEDDING_MODEL)
 
 # Read Excel file
-df = pd.read_excel('QAs.xlsx')
+df = pd.read_excel(FILE_PATH)
 
 # Fill NaN values with empty strings
 df = df.fillna('')
@@ -23,7 +23,7 @@ if client.collection_exists(collection_name=COLLECTION_NAME):
     # Delete the existing collection
     client.delete_collection(collection_name=COLLECTION_NAME)
 
-store_xl("QAs.xlsx")
+store_xl(FILE_PATH)
 
 # Recreate the collection with the specified vector size and distance metric
 client.recreate_collection(

@@ -17,7 +17,7 @@ quadrant_client = QdrantClient(
     api_key= os.getenv("QDRANT_API_KEY"),
     )
 
-excel_file_path = 'QAs.xlsx' 
+excel_file_path = FILE_PATH 
 embeddings = HuggingFaceEmbeddings(model_name=EMBEDDING_MODEL)
 collection_name = COLLECTION_NAME
 

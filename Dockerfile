@@ -9,11 +9,12 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy the entire application into the working directory
-COPY . .
+COPY . /app
 
-# Expose the default FastAPI port
+RUN chmod +x /app/startup.sh
+
 EXPOSE 8000
 
-# Run the FastAPI app
+ENTRYPOINT ["/app/startup.sh"]
 # CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
-CMD ["fastapi", "run", "main.py", "--host", "0.0.0.0", "--port", "8000"]
+# CMD ["fastapi", "run", "main.py", "--host", "0.0.0.0", "--port", "8000"]
