@@ -39,5 +39,5 @@ Once the Sahai backend service is running, you can send requests to it on port 8
 Send a `POST` request to the following endpoint, replacing `"user question"` with your actual query:
 
 ```
-http://localhost:8000/query?query="user question"
+http://localhost/query?query="user question"
 ```
