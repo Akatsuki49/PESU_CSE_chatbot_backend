@@ -1,113 +1,43 @@
-# Sahai and Qdrant Setup Instructions
+# Sahai and Qdrant Setup Instructions (Docker Compose)
 
-This document outlines the steps to set up and run the Sahai backend and Qdrant vector database, including using a Python virtual environment.
+This document outlines the steps to set up and run the Sahai backend and Qdrant vector database using Docker Compose.
 
 ## Prerequisites
 
-* Docker installed on your system.
-* Python 3.x installed on your system.
-* `add_data.py` script in the same directory as your `Dockerfile`.
+* Docker and Docker Compose installed on your system.
+* `add_data.py` script in the same directory as your `Dockerfile` and `docker-compose.yml`.
 * `QA.xlsx` file should be present in the same file directory.
+* A `docker-compose.yml` file configured to run both the Sahai and Qdrant services.
 
-## Sahai Setup (with Python Virtual Environment)
+## Docker Compose Setup
 
-1.  **Create and Activate Virtual Environment:**
+1.  **Run Docker Compose:**
 
-    * Navigate to the directory containing your `Dockerfile` and `add_data.py`.
-    * Create a virtual environment:
-
-        ```bash
-        python3 -m venv venv
-        ```
-
-    * Activate the virtual environment:
-
-        * On Linux/macOS:
-
-            ```bash
-            source venv/bin/activate
-            ```
-
-        * On Windows:
-
-            ```bash
-            venv\Scripts\activate
-            ```
-
-2.  **Install Dependencies (if any):**
-
-    * If your `add_data.py` script has dependencies, install them using pip:
+    * Ensure you are in the directory containing the `docker-compose.yml` file, `Dockerfile`, `add_data.py`, and `QA.xlsx`.
+    * Run the following command to build and start the Sahai and Qdrant containers:
 
         ```bash
-        pip install -r requirements.txt #if you have a requirements.txt file
-        # or
-        pip install package1 package2 # if you install packages manually
+        docker-compose up --build
         ```
 
-3.  **Add Data (Python Script):**
+2.  **Wait for Service Startup:**
 
-    * Run the `add_data.py` Python script to preprocess and prepare your data:
+    * After running the `docker-compose up --build` command, wait until you see the following message in your terminal logs:
 
-        ```bash
-        python add_data.py
+        ```
+        backend_service | INFO:     Uvicorn running on [http://0.0.0.0:8000](http://0.0.0.0:8000) (Press CTRL+C to quit)
         ```
 
-4.  **Deactivate Virtual Environment (Optional):**
-
-    * After the script is finished, you can deactivate the virtual environment:
-
-        ```bash
-        deactivate
-        ```
-
-5.  **Build Docker Image:**
-
-    * Build the Docker image for the Sahai backend:
-
-        ```bash
-        docker build -t sahai .
-        ```
-
-6.  **Run Docker Container:**
-
-    * Run the Sahai backend container, mapping port 8000:
-
-        ```bash
-        docker run -p 8000:8000 --name sahai_backend sahai
-        ```
-
-7.  **Attach to Running Container (Optional):**
-
-    * If you stopped the container and want to reattach to it's logs.
-    * Start the container.
-
-        ```bash
-        docker start sahai_backend
-        ```
-    * Attach to the container's output.
-
-        ```bash
-        docker attach sahai_backend
-        ```
-
-## Qdrant Setup
-
-1.  **Pull Qdrant Image:**
-
-    * Pull the Qdrant Docker image:
-
-        ```bash
-        docker pull qdrant/qdrant
-        ```
-
-2.  **Run Qdrant Container:**
-
-    * Run the Qdrant container, mapping ports 6333 and 6334, and mounting a volume for storage:
-
-        ```bash
-        docker run -p 6333:6333 -p 6334:6334 -v "$(pwd)/qdrant_storage:/qdrant/storage:z" qdrant/qdrant
-        ```
+    * This message indicates that the Sahai backend service has started successfully and is ready to receive requests.
 
 ## Sending Requests
 
-Once both the Sahai and Qdrant containers are running, you can send requests to the Sahai backend on port 8000. Ensure that Qdrant is also running so that Sahai can properly utilize the vector database.
+Once the Sahai backend service is running, you can send requests to it on port 8000. Ensure that Qdrant is also running so that Sahai can properly utilize the vector database.
+
+**Sending a Query:**
+
+Send a `POST` request to the following endpoint, replacing `"user question"` with your actual query:
+
+```
+http://localhost:8000/query?query="user question"
+```
