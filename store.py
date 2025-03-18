@@ -32,7 +32,7 @@ def store_xl(excel_file_path):
     if not client.collection_exists(collection_name):
         client.create_collection(
             collection_name=collection_name,
-            vectors_config=VectorParams(size=384, distance=Distance.COSINE),
+            vectors_config=VectorParams(size=1024, distance=Distance.COSINE),
         )
 
     def read_csv(file_path):
@@ -47,8 +47,8 @@ def store_xl(excel_file_path):
             answers.append(answer)
 
         #delete file at excel_file_path
-        if os.path.exists(excel_file_path):
-            os.remove(excel_file_path)
+        # if os.path.exists(excel_file_path):
+        #     os.remove(excel_file_path)
         
         return questions, answers
 
@@ -87,7 +87,7 @@ def store_single_qa(question, answer):
     if not client.collection_exists(collection_name):
         client.create_collection(
             collection_name=collection_name,
-            vectors_config=VectorParams(size=384, distance=Distance.COSINE),
+            vectors_config=VectorParams(size=1024, distance=Distance.COSINE),
         )
 
     client.upsert(

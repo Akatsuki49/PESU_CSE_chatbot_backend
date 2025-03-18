@@ -3,13 +3,15 @@ import shutil
 from openpyxl import load_workbook
 from pydantic import BaseModel
 from io import BytesIO
+import asyncio
 from rag import call_llm, retrieve_ans, validate
 from store import store_xl, store_single_qa
 from websocketManager import ConnectionManager
 from getSimilarQuestions import getSimilarQuestions, runloop
 import json
+import subprocess
 from typing import List
-from delete_points import delete_points
+from change import delete_points, update_points
 
 app = FastAPI()
 manager = ConnectionManager()
@@ -21,11 +23,13 @@ class Question(BaseModel):
 class QuestionsRequest(BaseModel):
     questions: List[Question]
 
+
+
 @app.post("/query/")
 async def query_pipeline(query: str):
     try:
-        relevant_ans = retrieve_ans(query)
-        final_ans = call_llm(query, relevant_ans)
+        relevant_ans, final_ans = retrieve_ans(query)
+        # final_ans = call_llm(query, relevant_ans)
         return {"query": query, "relevant_doc": relevant_ans, "final_response": final_ans}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
