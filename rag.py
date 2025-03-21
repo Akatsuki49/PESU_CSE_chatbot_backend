@@ -46,7 +46,7 @@ def retrieve_ans(question):
             ques = search_results[best_match].payload["question"]
             relevant_ans = search_results[best_match].payload["answer"]
             markdown_type = search_results[best_match].payload["markdown"]
-            return relevant_ans, 
+            return relevant_ans, markdown_type
         else:
             return "No relevant results found.", "No relevant results found."
     else:
