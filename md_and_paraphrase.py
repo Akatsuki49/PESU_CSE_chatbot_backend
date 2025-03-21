@@ -29,7 +29,7 @@ def convert_to_markdown(answer):
 def generate_paraphrases(question, num_paraphrases=30):
     messages = [
         ("system", "You are a helpful assistant that generates paraphrased versions of questions."),
-        ("user", f"Generate {num_paraphrases} paraphrased versions of the following question:\n\n'{question}'\n\n\nLet the paraphrases be as unique and variational as possible and generate these paraphrases in a new line each. Don't output anything like 'here is your response'")
+        ("user", f"Generate {num_paraphrases} paraphrased versions of the following question:\n\n'{question}'\n\n\nLet the paraphrases be as unique and variational as possible and generate these paraphrases in a new line each. At the last, add the original version also. Don't output anything like 'here is your response'")
     ]
     response = groq_client.invoke(messages)
     paraphrases = response.content.strip().split('\n')

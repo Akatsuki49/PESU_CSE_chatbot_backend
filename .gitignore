@@ -6,5 +6,4 @@ temp_QAs.xlsx
 qdrant_storage/
 diff.py
 Dockerfile.init
-original.xlsx
 startup.sh
