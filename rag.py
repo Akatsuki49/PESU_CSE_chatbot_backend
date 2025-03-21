@@ -45,7 +45,8 @@ def retrieve_ans(question):
         if best_match!=100:
             ques = search_results[best_match].payload["question"]
             relevant_ans = search_results[best_match].payload["answer"]
-            return relevant_ans, call_llm(ques, relevant_ans)
+            markdown_type = search_results[best_match].payload["markdown"]
+            return relevant_ans, 
         else:
             return "No relevant results found.", "No relevant results found."
     else:

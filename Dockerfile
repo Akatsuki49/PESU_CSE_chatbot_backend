@@ -11,10 +11,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy the entire application into the working directory
 COPY . /app
 
-RUN chmod +x /app/startup.sh
-
 EXPOSE 8000
 
-ENTRYPOINT ["/app/startup.sh"]
-# CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
-# CMD ["fastapi", "run", "main.py", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["fastapi", "run", "main.py", "--host", "0.0.0.0", "--port", "8000"]

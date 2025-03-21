@@ -1,13 +1,16 @@
 import pandas as pd
+import time
+import os
 from qdrant_client import QdrantClient
 from qdrant_client.models import PointStruct, VectorParams, Distance
 from sentence_transformers import SentenceTransformer
-from config import QDRANT_CLIENT, EMBEDDING_MODEL, COLLECTION_NAME, FILE_PATH
-from store import store_xl
+from config import QDRANT_CLIENT_1, EMBEDDING_MODEL, COLLECTION_NAME, FILE_PATH
 
-
-# # Initialize Qdrant client
-client = QdrantClient(QDRANT_CLIENT)
+# Initialize Qdrant client
+client = QdrantClient(
+    url=QDRANT_CLIENT_1,
+    api_key=os.getenv("QDRANT_API_KEY"),
+)
 
 # Initialize the embedding model
 model = SentenceTransformer(EMBEDDING_MODEL)
@@ -18,12 +21,9 @@ df = pd.read_excel(FILE_PATH)
 # Fill NaN values with empty strings
 df = df.fillna('')
 
-# Ensure the collection exists
+# Ensure the collection exists; if it does, delete it
 if client.collection_exists(collection_name=COLLECTION_NAME):
-    # Delete the existing collection
     client.delete_collection(collection_name=COLLECTION_NAME)
-
-store_xl(FILE_PATH)
 
 # Recreate the collection with the specified vector size and distance metric
 client.recreate_collection(
@@ -31,61 +31,33 @@ client.recreate_collection(
     vectors_config=VectorParams(size=1024, distance=Distance.COSINE)
 )
 
-# Prepare points to upload
-points = []
-for idx, row in df.iterrows():
-    question = row['Question']
-    answer = row['Answer']
-    vector = model.encode(question).tolist()
-    payload = {"question": question, "answer": answer}
-    point = PointStruct(id=idx, vector=vector, payload=payload)
-    points.append(point)
+# Define batch size
+batch_size = 1000
 
-# Upload points to Qdrant
-client.upsert(collection_name=COLLECTION_NAME, points=points)
+# Function to process and upload a batch of data
+def process_batch(batch_df, start_idx):
+    points = []
+    for idx, row in batch_df.iterrows():
+        question = row['Question']
+        answer = row['Answer']
+        answer_markdown = row['Answers_Markdown']
+        vector = model.encode(question).tolist()
+        payload = {"question": question, "answer": answer, "markdown": answer_markdown}
+        point = PointStruct(id=start_idx + idx, vector=vector, payload=payload)
+        points.append(point)
+    client.upsert(collection_name=COLLECTION_NAME, points=points)
+    print(f"Uploaded {len(points)} Q&A pairs starting from ID {start_idx} to the '{COLLECTION_NAME}' collection.")
 
-print(f"Uploaded {len(points)} Q&A pairs to the '{COLLECTION_NAME}' collection.")
+# Process data in batches
+for start_idx in range(0, len(df), batch_size):
+    end_idx = min(start_idx + batch_size, len(df))
+    batch_df = df.iloc[start_idx:end_idx]
+    process_batch(batch_df, start_idx)
+    
+    # Clear cache if using lru_cache
+    if hasattr(model.encode, 'cache_clear'):
+        model.encode.cache_clear()
+        print("Cache cleared.")
 
 
-# from config import QDRANT_CLIENT, EMBEDDING_MODEL, COLLECTION_NAME
-# from qdrant_client import QdrantClient
-
-# # Initialize the Qdrant client
-# client = QdrantClient(QDRANT_CLIENT)
-
-# # Define the collection name
-# collection_name = COLLECTION_NAME
-
-# # Initialize the offset for pagination
-# offset = None
-
-# while True:
-#     # Retrieve points using the scroll method
-#     points, offset = client.scroll(
-#         collection_name=collection_name,
-#         offset=offset,
-#         limit=100,  # Number of points to retrieve per request
-#         # with_vectors= True
-#     )
-
-#     # Process the retrieved points
-#     for point in points:
-#         # Access the point ID
-#         point_id = point.id
-
-#         # Access the point payload
-#         payload = point.payload
-
-#         # Access the point vector (if needed)
-#         vector = point.vector
-
-#         # Perform your desired operations with the point data
-#         # For example, print the point information
-#         print(f"Point ID: {point_id}")
-#         print(f"Payload: {payload}")
-#         print(f"Vector: {vector}")
-#         print('---')
-
-#     # Check if there are more points to retrieve
-#     if offset is None:
-#         break
+print("All data has been processed and uploaded.")

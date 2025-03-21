@@ -1,4 +1,5 @@
 QDRANT_CLIENT = "http://qdrant_service:6333"
+QDRANT_CLIENT_1 = "http://localhost:6333"
 # EMBEDDING_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
 EMBEDDING_MODEL = "mixedbread-ai/mxbai-embed-large-v1"
 FILE_PATH = "QAs.xlsx"
