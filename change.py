@@ -16,3 +16,12 @@ def delete_points(ids):
         ),
     )
     print("Points deleted successfully")
+
+def update_points(ids, question, answer):
+    new_payload = {question: answer}
+    client.overwrite_payload(
+        collection_name=COLLECTION_NAME,
+        payload=new_payload,
+        points=ids
+    )
+    print("Point updated successfully!")

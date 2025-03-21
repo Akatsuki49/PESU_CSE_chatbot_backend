@@ -4,3 +4,6 @@ __pycache__/
 temp_QAs.xlsx
 .env
 qdrant_storage/
+diff.py
+Dockerfile.init
+startup.sh
